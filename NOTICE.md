@@ -11,5 +11,6 @@ application shim are supplied by Google and are not redistributed here.
 No third-party album artwork, music, browser profile, authentication token,
 account data, or device discovery result is included in the repository.
 
-No open-source license grant has been selected for this repository. Public
-availability alone does not grant a license to redistribute the code or assets.
+The project software is licensed under the MIT License; see [LICENSE](LICENSE).
+The branding notices above remain applicable, and this project does not claim
+ownership of Sonos or Google branding.
