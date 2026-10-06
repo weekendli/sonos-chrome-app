@@ -1,0 +1,26 @@
+name: Build macOS application
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build universal application
+        env:
+          ARCHS: arm64 x86_64
+        run: bash scripts/build.sh
+      - name: Package application and tools
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent build/Sonos.app dist/Sonos.app.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sonos-macOS
+          path: |
+            dist/Sonos.app.zip
+            build/tools/set-icon

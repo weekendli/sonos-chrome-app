@@ -1,0 +1,21 @@
+/build/
+/dist/
+.DS_Store
+*.log
+*.xcuserstate
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.mobileprovision
+node_modules/
+# Browser profiles, credentials and runtime data do not belong in this repository.
+**/Cookies*
+**/Local State
+**/Login Data*
+**/Web Data*
+**/Preferences
+**/Singleton*
+**/Cache/
+**/Sessions/
