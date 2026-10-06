@@ -1,0 +1,61 @@
+name: Publish macOS preview release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate version and reserve a new tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "VERSION must contain a three-part numeric version." >&2; exit 1; }
+          tag="v$version"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::$tag already has a release. Change VERSION to publish a new version."
+            exit 1
+          fi
+          remote_tag="$(git ls-remote --refs origin "refs/tags/$tag")"
+          if [[ -n "$remote_tag" ]]; then
+            echo "::error::Git tag $tag already exists. Change VERSION to publish a new version."
+            exit 1
+          fi
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build universal app
+        env:
+          ARCHS: arm64 x86_64
+        run: bash scripts/build.sh
+
+      - name: Assemble install-ready archive and checksum
+        run: bash scripts/package-release.sh
+
+      - name: Publish preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.version.outputs.value }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Sonos Chrome App v${{ steps.version.outputs.value }} (Preview)" \
+            --notes "Preview release for macOS 13 and later. The archive is ad hoc signed, not Developer ID signed or notarized. See README-Install.md in the archive for installation, checksum verification, profile isolation, and Gatekeeper instructions. The fresh-profile install flow has not yet been runtime-verified." \
+            "dist/Sonos-macOS-v${{ steps.version.outputs.value }}.zip" \
+            "dist/SHA256SUMS"

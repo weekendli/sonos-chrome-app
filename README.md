@@ -21,32 +21,46 @@ A dedicated Sonos web app for macOS with a native menu bar controller.
 - macOS 13 or later. The current local application was used on Apple silicon
   with macOS 26; older macOS and Intel runtime behavior have not been verified.
 - Google Chrome installed at `/Applications/Google Chrome.app`.
-- Xcode Command Line Tools (`xcode-select --install`) and Python 3 for building.
-- Node.js 18+ for automated web app setup; no npm packages are required.
 - A Sonos system on the same local network. The controller currently discovers
   an IPv4 Sonos device using SSDP and follows that device's group coordinator.
 
-## Build and install
+## Install the preview release
+
+Download the [v0.1.0 preview release](https://github.com/weekendli/sonos-chrome-app/releases/tag/v0.1.0)
+and its `SHA256SUMS` file. In Terminal, run `shasum -a 256 -c SHA256SUMS` in the
+download folder, unzip the archive, then double-click `Install Sonos.command`.
+The installer places the prebuilt app in `~/Applications` and opens a normal
+Chrome window in a dedicated Sonos profile. In that window, sign in if prompted
+and install the site as a web app using Chrome's **More → Cast, save, and share
+→ Install page as app** menu. After Chrome creates the Sonos app, double-click
+`Apply Sonos Icon.command`, then open `~/Applications/Sonos.app`.
+
+The release archive includes a universal prebuilt app, so users do not need
+Xcode Command Line Tools, Python, Node.js, or a source build. The release is a
+preview and has not been installed on a fresh macOS profile. It is ad hoc signed
+and not notarized; see the release's install guide for macOS Gatekeeper details.
+
+## Build from source
 
 ```bash
 git clone https://github.com/weekendli/sonos-chrome-app.git
 cd sonos-chrome-app
 bash scripts/build.sh
 bash scripts/install.sh
+```
+
+Building from source requires Xcode Command Line Tools and Python 3. Node.js
+18+ is optional for automated PWA setup; no npm packages are required. The
+release archive's no-Node setup is manual: install the page in the dedicated
+Chrome profile, then run `Apply Sonos Icon.command` from the extracted folder.
+For automated setup from a source checkout, run:
+
+```bash
 node scripts/setup-web-app.mjs
 ```
 
 If an existing dedicated Sonos Chrome is running, the setup script exits before
-changing it. To explicitly allow that Chrome instance to restart:
-
-```bash
-node scripts/setup-web-app.mjs --restart
-```
-
-Setup installs the website's official manifest, selects `standalone` display
-mode, applies the existing icon through macOS's custom icon API, closes its
-temporary local debugging pipe and opens Sonos normally. It does not open a
-TCP debugging port. On a new installation, sign in to Sonos in its own window.
+changing it. Close that Chrome window before running automated setup.
 
 If the menu bar controller is already running, exit it using its power button
 before installing a replacement launcher. The installer backs up an existing
@@ -58,9 +72,9 @@ Build for both Apple silicon and Intel:
 ARCHS="arm64 x86_64" bash scripts/build.sh
 ```
 
-No signed/notarized installer is provided. Locally built application bundles
-use ad hoc signatures. The GitHub workflow compiles the universal application
-and uploads a build artifact; it does not publish a notarized release.
+Locally built application bundles use ad hoc signatures. The GitHub release
+workflow publishes a preview ZIP and SHA-256 checksum; it does not sign with a
+Developer ID certificate or notarize the app.
 
 ## Daily use
 

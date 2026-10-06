@@ -4,7 +4,11 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_ROOT/build"
 APP="$BUILD_DIR/Sonos.app"
 CONTROLLER="$APP/Contents/Helpers/Sonos Controller.app"
-VERSION=1.0.0
+VERSION="$(tr -d '[:space:]' < "$PROJECT_ROOT/VERSION")"
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "VERSION must contain a three-part numeric version." >&2
+  exit 1
+fi
 if [[ "$(uname -s)" != Darwin ]]; then
   echo "This project builds on macOS." >&2
   exit 1
